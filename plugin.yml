@@ -1,0 +1,12 @@
+main: be.maximvdw.chattranslate.ChatTranslate
+version: 0.1.0
+name: ChatTranslate
+website: http://dev.bukkit.org/bukkit-plugins/ChatTranslate/
+author: Maximvdw
+commands:
+  transprev:
+    description: Translate a previous message
+permissions:
+  translate.previous:
+    description: Translate previous chat messages
+    default: op
