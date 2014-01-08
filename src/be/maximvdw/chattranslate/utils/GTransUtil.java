@@ -8,6 +8,7 @@ import org.json.simple.parser.ParseException;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
@@ -37,7 +38,7 @@ public class GTransUtil {
 		return response;
 	}
 
-	public static String getTranslation(String text, String lang) {
+	public static String getTranslation(String text, String lang) throws UnsupportedEncodingException {
 		HashMap<String, String> hm = new HashMap<String, String>();
 		Pattern p = Pattern
 				.compile("(?i)\\b((?:https?://|www\\d{0,3}[.]|[a-z0-9.\\-]+[.][a-z]{2,4}/)(?:[^\\s()<>]+|\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\))+(?:\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\)|[^\\s`!()\\[\\]{};:'\".,<>?������]))");
@@ -56,7 +57,7 @@ public class GTransUtil {
 		m.appendTail(sb);
 		text = sb.toString();
 		// end replace with UUID
-		text = URLEncoder.encode(text);
+		text = URLEncoder.encode(text,"UTF-8");
 		String response = readURL("http://translate.google.com/translate_a/t?q="
 				+ text
 				+ "&client=p&text=&sl=auto&tl="

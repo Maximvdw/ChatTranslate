@@ -20,6 +20,7 @@ public class ChatTranslate extends JavaPlugin {
 		
 		/* Register Commands */
 		getCommand("transprev").setExecutor(new CommandListener());
+		getCommand("trans").setExecutor(new CommandListener());
 	}
 	
 	public static ChatTranslate getInstance(){

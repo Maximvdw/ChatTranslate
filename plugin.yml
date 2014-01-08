@@ -6,6 +6,8 @@ author: Maximvdw
 commands:
   transprev:
     description: Translate a previous message
+  trans:
+    description: Translate command
 permissions:
   translate.previous:
     description: Translate previous chat messages

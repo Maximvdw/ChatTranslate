@@ -1,5 +1,6 @@
 package be.maximvdw.chattranslate;
 
+import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
 
 import org.bukkit.entity.Player;
@@ -16,14 +17,17 @@ public class ChatMessages {
 
 	/**
 	 * Delete all messages from a player
-	 * @param player Minecraft Player
+	 * 
+	 * @param player
+	 *            Minecraft Player
 	 */
 	public static void deletePlayer(Player player) {
 		if (players.contains(player)) {
 			int idx = players.indexOf(player);
 			players.remove(idx);
 			LinkedList<Integer> ids = messageIDs.get(idx);
-			for (Message msg : messages) {
+			LinkedList<Message> msgs = new LinkedList<Message>(messages);
+			for (Message msg : msgs) {
 				if (ids.contains(msg.id)) {
 					messages.remove(msg); // Remove old message
 				}
@@ -42,6 +46,9 @@ public class ChatMessages {
 	 */
 	public static void addMessage(Player player, String message) {
 		if (players.contains(player)) {
+			ChatTranslate.getInstance().getLogger().info("Total stored messages: " + messages.size());
+			ChatTranslate.getInstance().getLogger().info("Messages from total players: " + players.size());
+			ChatTranslate.getInstance().getLogger().info("Last message ID: " + lastID);
 			int idx = players.indexOf(player);
 			LinkedList<Integer> ids = messageIDs.get(idx);
 			int oldID = ids.get(0);
@@ -49,13 +56,14 @@ public class ChatMessages {
 			int newID = lastID;
 			ids.add(newID); // Add last id
 			lastID++; // Count up the last id
-			for (Message msg : messages) {
+			LinkedList<Message> msgs = new LinkedList<Message>(messages);
+			for (Message msg : msgs) {
 				if (msg.id == oldID) {
 					messages.remove(msg); // Remove old message
 					break;
 				}
 			}
-			Message msg = new Message(newID, message);
+			Message msg = new Message(newID, player, message);
 			messages.add(msg); // Add new message
 		} else {
 			// Player's first message
@@ -65,6 +73,7 @@ public class ChatMessages {
 				ids.add(-1);
 			}
 			messageIDs.add(ids); // Save empty message ids
+			addMessage(player, message); // Add the message (first message)
 		}
 	}
 
@@ -73,25 +82,61 @@ public class ChatMessages {
 	 * 
 	 * @param player
 	 *            Minecraft Player
-	 * @return Message
+	 * @return Message id
 	 */
-	public static String getLastMessage(Player player) {
+	public static int getLastMessage(Player player) {
 		if (players.contains(player)) {
 			int idx = players.indexOf(player);
 			LinkedList<Integer> ids = messageIDs.get(idx);
 			int id = ids.get(keep - 1);
-			if (id != -1) {
-				for (Message msg : messages) {
-					if (msg.id == id) {
-						return msg.message;
-					}
-				}
-			}
-			return ""; // Error, message id not found
+			return id;
 		} else {
 			// Player is not yet added
-			return "";
+			return -1;
 		}
+	}
+
+	/**
+	 * Get the last chat message in the server
+	 * 
+	 * @return Message id
+	 */
+	public static int getLastMessage() {
+		return lastID - 1;
+	}
+
+	/**
+	 * Get the player from the id
+	 * 
+	 * @param messageid
+	 *            Message id
+	 * @return Player
+	 */
+	public static Player getPlayer(int messageid) {
+		LinkedList<Message> msgs = new LinkedList<Message>(messages);
+		for (Message msg : msgs) {
+			if (msg.id == messageid) {
+				return msg.player;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Get the message from the id
+	 * 
+	 * @param messageid
+	 *            Message id
+	 * @return Message
+	 */
+	public static String getMessage(int messageid) {
+		LinkedList<Message> msgs = new LinkedList<Message>(messages);
+		for (Message msg : msgs) {
+			if (msg.id == messageid) {
+				return msg.message;
+			}
+		}
+		return "";
 	}
 
 	/**
@@ -102,7 +147,11 @@ public class ChatMessages {
 	 * @return Translated message
 	 */
 	public static String translateMessage(String message, String language) {
-		return GTransUtil.getTranslation(message, language);
+		try {
+			return GTransUtil.getTranslation(message, language);
+		} catch (UnsupportedEncodingException e) {
+			return message; // Unsupported
+		}
 	}
 }
 
@@ -114,17 +163,21 @@ public class ChatMessages {
 class Message {
 	int id = 0;
 	String message = "";
+	Player player = null;
 
 	/**
 	 * Create a new message
 	 * 
 	 * @param id
 	 *            Message ID
+	 * @param player
+	 *            Minecraft Player
 	 * @param message
 	 *            Message
 	 */
-	public Message(int id, String message) {
+	public Message(int id, Player player, String message) {
 		this.id = id;
 		this.message = message;
+		this.player = player;
 	}
 }
